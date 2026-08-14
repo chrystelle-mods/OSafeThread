@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "osafethread",
+  "version-string": "1.0.0",
+  "description": "OStim-adjacent SKSE utility framework: makes scenes combat-safe and exposes an API to integrating mods.",
+  "builtin-baseline": "fc3f61366102c1f0d4547c06d03c523bb18c13a7",
+  "dependencies": [
+    "directxmath",
+    "directxtk",
+    "rapidcsv",
+    "spdlog"
+  ]
+}
