@@ -27,9 +27,10 @@ namespace
     };
 
     // --- Combat ------------------------------------------------------------------------------
-    // Character vtable[0], slot 0x0E4 (the per-tick combat update). A calmed actor is yanked
+    // Character vtable[0], UpdateCombat (the per-tick combat update). A calmed actor is yanked
     // out of combat and its normal combat update is skipped.
-    // NB: 0x0E4 is the SE/AE slot; Skyrim VR shifts vtable indices — revisit for VR.
+    // Slot is 0x0E4 on SE/AE, 0x0E6 on VR (see Install()) — the VR index still wants in-game
+    // verification on a real VR install before we call VR "supported".
     struct CombatHook
     {
         static void thunk(RE::Character* a_this)
@@ -72,8 +73,11 @@ void OSafeThread::Hooks::Install()
                                             REL::VariantOffset(0x526, 0x67B, 0x67B) };
     DetectHook::func = trampoline.write_call<5>(detect.address(), DetectHook::thunk);
 
+    // UpdateCombat is Actor vtable slot 0x0E4 on SE/AE; Skyrim VR shifts it to 0x0E6.
+    // Authoritative: CommonLibSSE-NG's own Actor::UpdateCombat uses RelocateVirtual(0x0E4, 0x0E6).
     REL::Relocation<std::uintptr_t> characterVtbl{ RE::Character::VTABLE[0] };
-    CombatHook::func = characterVtbl.write_vfunc(0x0E4, CombatHook::thunk);
+    const std::size_t updateCombatIdx = REL::Module::IsVR() ? 0x0E6 : 0x0E4;
+    CombatHook::func = characterVtbl.write_vfunc(updateCombatIdx, CombatHook::thunk);
 
     REL::Relocation<std::uintptr_t> mainUpdate{ REL::VariantID(35565, 36564, 0x5BAB10) };
     FrameUpdateHook::func = trampoline.write_call<5>(
